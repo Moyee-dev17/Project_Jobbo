@@ -8,19 +8,18 @@ import { CreateSuburbDto } from '../dto/create-suburb.dto';
 import { UpdateSuburbDto } from '../dto/update-suburb.dto';
 import { PrismaService } from 'src/Prisma-config/prisma.service';
 
-
 @Injectable()
 export class SuburbService {
   constructor(private readonly db: PrismaService) {}
   async createSuburb(createSuburbDto: CreateSuburbDto, municipalityId: number) {
     try {
       const MunicExist = await this.db.municipality.findUnique({
-        where: { id: municipalityId ,isActive:true},
+        where: { id: municipalityId, isActive: true },
       });
       if (!MunicExist) throw new NotFoundException('municipality not found');
 
       const suburbExist = await this.db.suburb.findFirst({
-        where: { name: createSuburbDto.name , isActive:true},
+        where: { name: createSuburbDto.name, isActive: true },
       });
       if (suburbExist) throw new BadRequestException('suburb already exist');
 
@@ -75,7 +74,9 @@ export class SuburbService {
 
   async findOne(id: number) {
     try {
-      const OneSburb = await this.db.suburb.findUnique({ where: { id , isActive:true} });
+      const OneSburb = await this.db.suburb.findUnique({
+        where: { id, isActive: true },
+      });
       return OneSburb;
     } catch (error: any) {
       console.log(error);
@@ -89,7 +90,7 @@ export class SuburbService {
   async update(id: number, updateSuburbDto: UpdateSuburbDto) {
     try {
       await this.db.suburb.update({
-        where: { id , isActive:true},
+        where: { id, isActive: true },
         data: updateSuburbDto,
       });
       return { message: 'updated' };
@@ -104,7 +105,10 @@ export class SuburbService {
 
   async remove(id: number) {
     try {
-      await this.db.suburb.update({ where: { id ,isActive:true}, data: { isActive: false } });
+      await this.db.suburb.update({
+        where: { id, isActive: true },
+        data: { isActive: false },
+      });
       return { message: 'deleted' };
     } catch (error) {
       console.log(error);

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -22,8 +23,9 @@ export class loginUser {
   ) {}
 
   async login(login: LoginDto) {
-    const user = await this.db.users.findFirst({
-      where: { phone: login.phone },
+    try {
+      const user = await this.db.users.findFirst({
+      where: { phone: login.phone , isActive:true},
     });
     if (!user) throw new BadRequestException('Utilisateur introuvable');
 
@@ -32,57 +34,65 @@ export class loginUser {
 
     const payload = { id: user.id };
     const access_token = await this.authService.tokenGenerate(payload);
-    const User = await this.db.users.findUnique({ where: { id: user.id } });
+    const User = await this.db.users.findUnique({ where: { id: user.id ,isActive:true} });
 
     return {
       message: 'Connexion réussie',
       access_token,
       User,
     };
+    } catch (error:any) {
+      if(error instanceof BadRequestException)throw error
+      throw new InternalServerErrorException("internal server error")
+    }
+    
   }
 
   async updatePwd(userId: number, body: updatePwdDto) {
-    const user = await this.db.users.findFirst({ where: { id: userId } });
+    try {
+      const user = await this.db.users.findFirst({ where: { id: userId , isActive:true} });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
 
     const passwordMatch = await bcrypt.compare(body.oldPassword, user.password);
     if (!passwordMatch)
-      throw new BadRequestException('Ancien mot de passe incorrect');
+      throw new BadRequestException('password not match');
 
     if (body.Newpassword !== body.confirmPassword)
-      throw new BadRequestException('Les mots de passe ne correspondent pas');
+      throw new BadRequestException('password not match');
 
     const hashedPassword = await bcrypt.hash(body.Newpassword, 10);
     await this.db.users.update({
-      where: { id: userId },
+      where: { id: userId},
       data: { password: hashedPassword },
     });
     return { message: 'Mot de passe modifié avec succès' };
+    } catch (error:any) {
+      if(error instanceof NotFoundException)throw error
+      throw new InternalServerErrorException("internal server error")
+    }
+    
   }
 
-  async updateNewPwd(userId: number, phone: string, Newpassword: string) {
-    const user = await this.db.users.findFirst({ where: { phone } });
-    if (!user) throw new NotFoundException('Utilisateur introuvable');
-
-    const hashedPassword = await bcrypt.hash(Newpassword, 5);
-    const updatepwd = await this.db.users.update({
-      where: { id: userId },
-      data: { password: hashedPassword },
-    });
-    return { mesaage: 'mot de passe modifié avec success' };
-  }
-
-  async requestPasswordReset(phone: string) {
-    const user = await this.db.users.findFirst({ where: { phone } });
+ 
+  async forgotPassword(phone: string) {
+    try {
+      const user = await this.db.users.findFirst({ where: { phone } });
     if (!user) throw new NotFoundException('Utilisateur non trouvé');
     const code = await this.otpservice.generateOtp(phone);
     return {
       message: 'Code OTP envoyé pour réinitialisation du mot de passe',
     };
+    } catch (error:any) {
+      if(error instanceof NotFoundException)throw error
+      throw new InternalServerErrorException("internal server error")
+    }
+    
   }
 
   async resetPassword(body: resetPwdDto) {
-    const user = await this.db.users.findUnique({
+    try {
+
+          const user = await this.db.users.findUnique({
       where: { phone: body.phone },
     });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
@@ -101,5 +111,13 @@ export class loginUser {
       data: { password: hashedPassword },
     });
     return { message: 'Mot de passe réinitialisé avec succès' };
+      
+    } catch (error:any) {
+      if(error instanceof NotFoundException||
+        error instanceof BadRequestException
+      )throw error
+      throw new InternalServerErrorException("internal server error")
+    }
+
   }
 }

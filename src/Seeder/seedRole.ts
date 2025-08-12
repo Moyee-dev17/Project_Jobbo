@@ -9,8 +9,8 @@ export enum Role {
 export class seedRole {
   constructor(private readonly db: PrismaService) {}
   async SeedRole() {
-    let tabRole = ['User', 'Admin', 'Root'];
-    for (let i in tabRole) {
+    const tabRole = ['User', 'Admin', 'Root'];
+    for (const i in tabRole) {
       const roleExist = await this.db.role.findFirst({
         where: { name: tabRole[i] },
       });

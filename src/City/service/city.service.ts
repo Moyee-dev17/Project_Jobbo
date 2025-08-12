@@ -14,7 +14,7 @@ export class CityService {
   async createCity(createCityDto: CreateCityDto) {
     try {
       const cityExist = await this.db.city.findFirst({
-        where: { name: createCityDto.name , isActive:true},
+        where: { name: createCityDto.name, isActive: true },
       });
       if (cityExist) throw new BadRequestException('city already exist');
 
@@ -83,7 +83,7 @@ export class CityService {
   async update(id: number, updateCityDto: UpdateCityDto) {
     try {
       await this.db.city.update({
-        where: { id ,isActive:true},
+        where: { id, isActive: true },
         data: updateCityDto,
       });
       return { message: 'updated' };
@@ -99,7 +99,7 @@ export class CityService {
   async remove(id: number) {
     try {
       await this.db.city.update({
-        where: { id , isActive:true},
+        where: { id, isActive: true },
         data: { isActive: false },
       });
       return { message: 'deleted' };

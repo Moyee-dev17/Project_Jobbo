@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   UnauthorizedException,
+  InternalServerErrorException
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from '../Dto/login.dto';
@@ -17,7 +18,8 @@ export class loginAdmin {
   ) {}
 
   async loginAdmin(login: LoginDto) {
-    const user = await this.db.users.findFirst({
+    try {
+      const user = await this.db.users.findFirst({
       where: { phone: login.phone },
     });
     if (!user) {
@@ -44,5 +46,13 @@ export class loginAdmin {
       access_token,
       User,
     };
+    } catch (error) {
+      if(error instanceof ForbiddenException||
+        error instanceof BadRequestException||
+        error instanceof UnauthorizedException
+            )throw error
+    throw new InternalServerErrorException("internal server error")
+    }
+    
   }
 }

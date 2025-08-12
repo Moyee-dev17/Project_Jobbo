@@ -18,7 +18,7 @@ export class MunicipalityService {
   ) {
     try {
       const cityExist = await this.db.city.findUnique({
-        where: { id: Number(cityId) , isActive:true},
+        where: { id: Number(cityId), isActive: true },
       });
       if (!cityExist) throw new NotFoundException('city not found');
 
@@ -98,8 +98,8 @@ export class MunicipalityService {
         data: updateMunicipalityDto,
       });
       return {
-        message:'updated'
-      }
+        message: 'updated',
+      };
     } catch (error: any) {
       console.log(error);
       throw new InternalServerErrorException(
@@ -111,13 +111,13 @@ export class MunicipalityService {
 
   async remove(id: number) {
     try {
-       await this.db.municipality.update({
-        where: { id , isActive:true},
+      await this.db.municipality.update({
+        where: { id, isActive: true },
         data: { isActive: false },
       });
-      return{
-        message:'deleted'
-      }
+      return {
+        message: 'deleted',
+      };
     } catch (error: any) {
       console.log(error);
       throw new InternalServerErrorException(

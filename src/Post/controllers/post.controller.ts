@@ -35,10 +35,10 @@ export class PostController {
       Number(categorieId),
     );
   }
-
+// TODO:filtrage par categorie
   @UseGuards(JwtGuards)
   @Get('getUserPost')
-  findOne(
+  findUserPost(
     @Query('Page') Page: string,
     @Query('limit') limit: string,
     @Query('libelle') libelle: string,
@@ -48,12 +48,17 @@ export class PostController {
     return this.postService.findUserPost(userId, +Page, +limit, libelle);
   }
 
+
+  // TO DO : findAll pour user global(post publish)
+
+
   @UseGuards(JwtGuards, RootOnlyGuard)
   @Get()
   findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
     return this.postService.findAllPagination(+Page, +limit);
   }
 
+// ??????
   @UseGuards(JwtGuards)
   @Get('getPost')
   getPost(

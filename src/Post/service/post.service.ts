@@ -22,17 +22,17 @@ export class PostService {
   ) {
     try {
       const post = await this.db.post.findFirst({
-        where: { title: createPostDto.title , isActive:true},
+        where: { title: createPostDto.title, isActive: true },
       });
       if (post) throw new BadRequestException('post already exist');
 
       const userExist = await this.db.users.findUnique({
-        where: { id: userId , isActive:true},
+        where: { id: userId, isActive: true },
       });
       if (!userExist) throw new NotFoundException('user not found');
 
       const categorieExist = await this.db.category.findUnique({
-        where: { id: createPostDto.categorieId ,isActive:true},
+        where: { id: createPostDto.categorieId, isActive: true },
       });
       if (!categorieExist) throw new NotFoundException('category not found');
 
@@ -67,11 +67,13 @@ export class PostService {
   ) {
     try {
       const userExist = await this.db.users.findUnique({
-        where: { id: userId ,isActive:true},
+        where: { id: userId, isActive: true },
       });
       if (!userExist) throw new NotFoundException('user not found');
       const skip = (Page - 1) * limit;
-      const NombreDePost = await this.db.post.count({ where: { userId , isActive:true} });
+      const NombreDePost = await this.db.post.count({
+        where: { userId, isActive: true },
+      });
       const nombreDePage = NombreDePost / limit;
 
       const searchKey = libelle || undefined;
@@ -87,7 +89,7 @@ export class PostService {
               ],
               userId: userExist.id,
             }
-          : { userId: userExist.id },
+          : { userId: userExist.id , isActive:true},
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip,
@@ -119,6 +121,7 @@ export class PostService {
             },
           },
         },
+        orderBy:{createdAt:'desc'}
       });
     } catch (error: any) {
       console.log(error);
@@ -152,11 +155,11 @@ export class PostService {
   async update(id: number, updatePostDto: UpdatePostDto, userId: number) {
     try {
       const userExist = await this.db.users.findUnique({
-        where: { id: userId , isActive:true},
+        where: { id: userId, isActive: true },
       });
       if (!userExist) throw new NotFoundException('user not found');
       await this.db.post.update({
-        where: { id , isActive:true},
+        where: { id, isActive: true },
         data: updatePostDto,
       });
       return { message: 'updated' };
@@ -204,7 +207,7 @@ export class PostService {
       if (Post?.status == PostStatus.REJECTED)
         throw new BadRequestException('post already reject');
       await this.db.post.update({
-        where: { id , isActive:true},
+        where: { id, isActive: true },
         data: { status: PostStatus.REJECTED },
       });
       return { message: 'rejected' };

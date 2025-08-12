@@ -50,7 +50,7 @@ export class UsersService {
       return {
         message: 'created',
       };
-    } catch (error) {
+    } catch (error:any) {
       console.log(error);
       if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException('internal server error');
@@ -113,8 +113,8 @@ export class UsersService {
       return {
         data: users,
         currentPage: Page,
-        totalPost :NbrTotalPost,
-        totalPage :NbrTotalPage,
+        totalPost: NbrTotalPost,
+        totalPage: NbrTotalPage,
       };
     } catch (error: any) {
       throw new BadRequestException('internal server error', error);
@@ -128,11 +128,11 @@ export class UsersService {
         include: { post: true },
       });
 
-      if(!user)throw new NotFoundException('user not found')
+      if (!user) throw new NotFoundException('user not found');
       return user;
     } catch (error: any) {
       console.log(error);
-      throw new InternalServerErrorException('internal server error')
+      throw new InternalServerErrorException('internal server error');
     }
   }
 
@@ -141,7 +141,7 @@ export class UsersService {
       const userexist = await this.db.users.findUnique({
         where: { id: userId, isActive: true },
       });
-      if (!userexist) throw new NotFoundException('user not found')
+      if (!userexist) throw new NotFoundException('user not found');
       const UpdateUser = await this.db.users.update({
         where: { id: userId, isActive: true },
         data: updateUserDto,
@@ -149,39 +149,44 @@ export class UsersService {
       return UpdateUser;
     } catch (error: any) {
       console.log(error);
-      if(error instanceof NotFoundException)throw error
-      throw new InternalServerErrorException('internal server error')
-      
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('internal server error');
     }
   }
 
   async certificateCompte(id: number) {
     try {
-      const userExist = await this.db.users.findUnique({ where: { id , isActive:true} });
+      const userExist = await this.db.users.findUnique({
+        where: { id, isActive: true },
+      });
       if (!userExist) throw new NotFoundException('user not found');
       if (userExist.certificate == true)
         throw new BadRequestException('user already certificated');
-       await this.db.users.update({
+      await this.db.users.update({
         where: { id, isActive: true },
         data: { certificate: true },
       });
       return { message: 'compte certifié avec succes' };
     } catch (error: any) {
-      if (error instanceof NotFoundException||
-          error instanceof BadRequestException
-      ) throw error;
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      )
+        throw error;
       console.log(error);
-      throw new InternalServerErrorException('internal server error')
+      throw new InternalServerErrorException('internal server error');
     }
   }
 
   async Uncertificate(id: number) {
     try {
-      const userExist = await this.db.users.findUnique({ where: { id ,isActive:true } });
+      const userExist = await this.db.users.findUnique({
+        where: { id, isActive: true },
+      });
       if (!userExist) throw new NotFoundException('user not found');
       if (userExist.certificate == false)
         throw new BadRequestException('this user is not certificate');
-    await this.db.users.update({
+      await this.db.users.update({
         where: { id, isActive: true },
         data: { certificate: false },
       });
@@ -189,10 +194,12 @@ export class UsersService {
         message: 'certification retirée',
       };
     } catch (error: any) {
-      if (error instanceof NotFoundException||
-          error instanceof BadRequestException
-      ) throw error;
-      throw new InternalServerErrorException('internal server error')
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      )
+        throw error;
+      throw new InternalServerErrorException('internal server error');
     }
   }
 
@@ -202,15 +209,17 @@ export class UsersService {
         where: { roleId: Role.admin, isActive: true },
       });
       return admins;
-    } catch (error) {
+    } catch (error:any) {
       console.log(error);
-      throw new InternalServerErrorException('internal server error')
+      throw new InternalServerErrorException('internal server error');
     }
   }
 
   async Active(id: number) {
     try {
-      const AdminExist = await this.db.users.findFirst({ where: { roleId:Role.admin ,id,isActive:true} });
+      const AdminExist = await this.db.users.findFirst({
+        where: { roleId: Role.admin, id, isActive: true },
+      });
       if (!AdminExist) throw new NotFoundException('admin not found');
       if (AdminExist && AdminExist.isActive == true)
         throw new BadRequestException('admin already activated');
@@ -221,17 +230,21 @@ export class UsersService {
         };
       }
     } catch (error: any) {
-      if (error instanceof NotFoundException||
-          error instanceof BadRequestException
-      ) throw error;
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      )
+        throw error;
       console.log(error);
-      throw new InternalServerErrorException('internal server error')
+      throw new InternalServerErrorException('internal server error');
     }
   }
 
   async Desactive(id: number) {
     try {
-      const AdminExist = await this.db.users.findFirst({ where: { roleId:Role.admin , id,isActive:true} });
+      const AdminExist = await this.db.users.findFirst({
+        where: { roleId: Role.admin, id, isActive: true },
+      });
       if (!AdminExist) throw new NotFoundException('admin not found');
       if (AdminExist && AdminExist.isActive == false)
         throw new BadRequestException('admin already desactivated');
@@ -245,27 +258,31 @@ export class UsersService {
         };
       }
     } catch (error: any) {
-      if (error instanceof NotFoundException||
-          error instanceof BadRequestException
-      ) throw error;
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      )
+        throw error;
       console.log(error);
-      throw new InternalServerErrorException('internal server error')
+      throw new InternalServerErrorException('internal server error');
     }
   }
 
-  async remove(id: number, userId: number) {
+  async remove(userId: number) {
     try {
-      const userexist = await this.db.users.findUnique({ where: { id:userId } });
+      const userexist = await this.db.users.findUnique({
+        where: { id: userId },
+      });
       if (!userexist) throw new NotFoundException('user not found');
       await this.db.users.update({
-        where: { id },
+        where: { id :userexist.id },
         data: { isActive: false },
       });
       return { message: 'compte supprimé avec succes' };
-    } catch (error) {
+    } catch (error:any) {
       if (error instanceof NotFoundException) throw error;
       console.log(error);
-      throw new InternalServerErrorException('internal server error')
+      throw new InternalServerErrorException('internal server error');
     }
   }
 }
