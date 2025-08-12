@@ -6,8 +6,10 @@ import {
   Patch,
   Param,
   UseGuards,
-  Req,
+  Request,
   Query,
+  Delete,
+  Put,
 } from '@nestjs/common';
 import { PostService } from '../service/post.service';
 import { CreatePostDto } from '../dto/create-post.dto';
@@ -23,7 +25,7 @@ export class PostController {
   @Post()
   create(
     @Body() createPostDto: CreatePostDto,
-    @Req() req: any,
+    @Request() req: any,
     categorieId: number,
   ) {
     const userId = req.user.id;
@@ -40,7 +42,7 @@ export class PostController {
     @Query('Page') Page: string,
     @Query('limit') limit: string,
     @Query('libelle') libelle: string,
-    @Req() req: any,
+    @Request() req: any,
   ) {
     const userId = req.user.id;
     return this.postService.findUserPost(userId, +Page, +limit, libelle);
@@ -57,17 +59,17 @@ export class PostController {
   getPost(
     @Body() body: { categorie: string },
     @Query('status') status: string,
-    @Req() req: any,
+    @Request() req: any,
   ) {
     return this.postService.getPostByStatusAndCategorie(status, body.categorie);
   }
 
   @UseGuards(JwtGuards)
-  @Patch('update/:id')
+  @Put(':id')
   update(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
-    @Req() req: any,
+    @Request() req: any,
   ) {
     const userId = req.user.id;
     return this.postService.update(+id, updatePostDto, userId);
@@ -86,8 +88,8 @@ export class PostController {
   }
 
   @UseGuards(JwtGuards)
-  @Patch('delete/:id')
-  remove(@Param('id') id: string, @Req() req: any) {
+  @Delete(':id')
+  remove(@Param('id') id: string, @Request() req: any) {
     const userId = req.user.id;
     return this.postService.remove(+id, userId);
   }

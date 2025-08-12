@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Query,
 } from '@nestjs/common';
 import { CityService } from '../service/city.service';
 import { CreateCityDto } from '../dto/create-city.dto';
@@ -26,8 +26,8 @@ export class CityController {
   }
 
   @Get()
-  findAll() {
-    return this.cityService.findAll();
+  findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
+    return this.cityService.findAll(+Page, +limit);
   }
 
   @Get(':id')
@@ -36,13 +36,13 @@ export class CityController {
   }
 
   @UseGuards(JwtGuards, AdminOnlyGuard)
-  @Patch('update/:id')
+  @Patch(':id')
   update(@Param('id') id: string, @Body() updateCityDto: UpdateCityDto) {
     return this.cityService.update(+id, updateCityDto);
   }
 
   @UseGuards(JwtGuards, AdminOnlyGuard)
-  @Patch('delete/:id')
+  @Delete(':id')
   remove(@Param('id') id: string) {
     return this.cityService.remove(+id);
   }

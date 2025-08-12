@@ -17,8 +17,10 @@ export class OtpVerifyService {
       if (!isValid) {
         throw new UnauthorizedException('Code OTP invalide');
       }
+
       const remaining = totp.timeRemaining();
       console.log(`il vous reste ${remaining}s avant l'expiration de l'OTP`);
+
       const updatedUser = await this.db.users.update({
         where: { phone: user.phone },
         data: { isActive: true },

@@ -5,8 +5,9 @@ import {
   Body,
   Patch,
   Param,
-  Req,
   UseGuards,
+  Delete,
+  Query,
 } from '@nestjs/common';
 import { CategoriesService } from '../service/categories.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
@@ -19,14 +20,13 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto, @Req() req) {
-    const userId = req.user.id;
-    return this.categoriesService.createCategory(createCategoryDto, userId);
+  create(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoriesService.createCategory(createCategoryDto);
   }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
+    return this.categoriesService.findAll(+Page, +limit);
   }
 
   @Get(':id')
@@ -34,8 +34,8 @@ export class CategoriesController {
     return this.categoriesService.findOne(+id);
   }
 
-  @UseGuards(JwtGuards,AdminOnlyGuard)
-  @Patch('update/:id')
+  @UseGuards(JwtGuards, AdminOnlyGuard)
+  @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -44,7 +44,7 @@ export class CategoriesController {
   }
 
   @UseGuards(AdminOnlyGuard)
-  @Patch('delete/:id')
+  @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(+id);
   }

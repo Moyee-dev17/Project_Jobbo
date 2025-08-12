@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Query,
+  Delete,
+} from '@nestjs/common';
 import { MunicipalityService } from '../service/municipality.service';
 import { CreateMunicipalityDto } from '../dto/create-municipality.dto';
 import { UpdateMunicipalityDto } from '../dto/update-municipality.dto';
@@ -8,7 +18,7 @@ import { AdminOnlyGuard } from 'src/Authentification/AdminOnly.guard';
 @Controller('municipality')
 export class MunicipalityController {
   constructor(private readonly municipalityService: MunicipalityService) {}
-@UseGuards(JwtGuards,AdminOnlyGuard)
+  @UseGuards(JwtGuards, AdminOnlyGuard)
   @Post(':id')
   create(
     @Param('id') id: string,
@@ -18,8 +28,8 @@ export class MunicipalityController {
   }
 
   @Get()
-  findAll() {
-    return this.municipalityService.findAll();
+  findAll(@Query('Page') Page: string, @Query('limit') limit: number) {
+    return this.municipalityService.findAll(+Page, +limit);
   }
 
   @Get(':id')
@@ -27,7 +37,7 @@ export class MunicipalityController {
     return this.municipalityService.findOne(+id);
   }
 
-  @Patch('update/:id')
+  @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateMunicipalityDto: UpdateMunicipalityDto,
@@ -35,8 +45,8 @@ export class MunicipalityController {
     console.log(updateMunicipalityDto);
     return this.municipalityService.update(+id, updateMunicipalityDto);
   }
-@UseGuards(JwtGuards,AdminOnlyGuard)
-  @Patch('delete/:id')
+  @UseGuards(JwtGuards, AdminOnlyGuard)
+  @Delete(':id')
   remove(@Param('id') id: string) {
     return this.municipalityService.remove(+id);
   }

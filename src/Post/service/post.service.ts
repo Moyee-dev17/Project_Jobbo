@@ -22,21 +22,21 @@ export class PostService {
   ) {
     try {
       const post = await this.db.post.findFirst({
-        where: { title: createPostDto.title },
+        where: { title: createPostDto.title , isActive:true},
       });
       if (post) throw new BadRequestException('post already exist');
 
       const userExist = await this.db.users.findUnique({
-        where: { id: userId },
+        where: { id: userId , isActive:true},
       });
       if (!userExist) throw new NotFoundException('user not found');
 
       const categorieExist = await this.db.category.findUnique({
-        where: { id: createPostDto.categorieId },
+        where: { id: createPostDto.categorieId ,isActive:true},
       });
       if (!categorieExist) throw new NotFoundException('category not found');
 
-      const createPost = await this.db.post.create({
+      await this.db.post.create({
         data: {
           title: createPostDto.title,
           description: createPostDto.description,
@@ -49,7 +49,7 @@ export class PostService {
       });
 
       return { message: 'created' };
-    } catch (error) {
+    } catch (error: any) {
       if (
         error instanceof NotFoundException ||
         error instanceof BadRequestException
@@ -65,52 +65,64 @@ export class PostService {
     limit: number = 20,
     libelle: string,
   ) {
-    const userExist = await this.db.users.findUnique({ where: { id: userId } });
-    if (!userExist) throw new NotFoundException('user not found');
-    const skip = (Page - 1) * limit;
-    const NombreDePost = await this.db.post.count({ where: { userId } });
-    const nombreDePage = NombreDePost / limit;
+    try {
+      const userExist = await this.db.users.findUnique({
+        where: { id: userId ,isActive:true},
+      });
+      if (!userExist) throw new NotFoundException('user not found');
+      const skip = (Page - 1) * limit;
+      const NombreDePost = await this.db.post.count({ where: { userId , isActive:true} });
+      const nombreDePage = NombreDePost / limit;
 
-    const searchKey = libelle || undefined;
-    const Post = await this.db.post.findMany({
-      where: searchKey
-        ? {
-          isActive:true,
-            OR: [
-              { title: { contains: searchKey, mode: 'insensitive' } },
-              { description: { contains: searchKey, mode: 'insensitive' } },
-              { adress: { contains: searchKey, mode: 'insensitive' } },
-              { contact: { contains: searchKey, mode: 'insensitive' } },
-            ],
-            userId: userExist.id
-          }
-        : { userId: userExist.id },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip,
-    });
+      const searchKey = libelle || undefined;
+      const Post = await this.db.post.findMany({
+        where: searchKey
+          ? {
+              isActive: true,
+              OR: [
+                { title: { contains: searchKey, mode: 'insensitive' } },
+                { description: { contains: searchKey, mode: 'insensitive' } },
+                { adress: { contains: searchKey, mode: 'insensitive' } },
+                { contact: { contains: searchKey, mode: 'insensitive' } },
+              ],
+              userId: userExist.id,
+            }
+          : { userId: userExist.id },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip,
+      });
 
-    return {
-      message: 'la liste des postes',
-      data: Post,
-      currentPage: Page,
-      NbrTotalPage: nombreDePage,
-      NbrTotalPost: NombreDePost,
-    };
+      return {
+        message: 'la liste des postes',
+        data: Post,
+        currentPage: Page,
+        NbrTotalPage: nombreDePage,
+        NbrTotalPost: NombreDePost,
+      };
+    } catch (error: any) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('internal server error');
+    }
   }
 
   async getPostByStatusAndCategorie(status: string, categorie: string) {
-    return await this.db.post.findMany({
-      where: {
-        status,isActive:true,
-        categorie: {
-          title: {
-            equals: categorie,
-            mode: 'insensitive',
+    try {
+      return await this.db.post.findMany({
+        where: {
+          status,
+          isActive: true,
+          categorie: {
+            title: {
+              equals: categorie,
+              mode: 'insensitive',
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
   }
 
   async findAllPagination(Page: number, limit: number) {
@@ -120,7 +132,7 @@ export class PostService {
       const NbrTotalPage = NbrTotalPost / limit;
 
       const allPost = await this.db.post.findMany({
-        where: { status: PostStatus.PUBLISHED ,isActive:true},
+        where: { status: PostStatus.PUBLISHED, isActive: true },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip,
@@ -138,68 +150,101 @@ export class PostService {
   }
 
   async update(id: number, updatePostDto: UpdatePostDto, userId: number) {
-    const userExist = await this.db.users.findUnique({ where: { id: userId } });
-    if (!userExist) throw new NotFoundException('user not found');
-    await this.db.post.update({
-      where: { id },
-      data: updatePostDto,
-    });
-    return { message: 'updated' };
+    try {
+      const userExist = await this.db.users.findUnique({
+        where: { id: userId , isActive:true},
+      });
+      if (!userExist) throw new NotFoundException('user not found');
+      await this.db.post.update({
+        where: { id , isActive:true},
+        data: updatePostDto,
+      });
+      return { message: 'updated' };
+    } catch (error: any) {
+      if (error instanceof NotFoundException) throw error;
+      console.log(error);
+      throw new InternalServerErrorException('internal server error');
+    }
   }
 
   async UpdatePublished(id: number) {
-    const Post = await this.db.post.findUnique({ where: { id , isActive:true} });
-    if (Post?.status == PostStatus.REJECTED)
-      throw new ForbiddenException(
-        'cannot publish a post that has been rejected',
-      );
-    if (Post?.status == PostStatus.PUBLISHED)
-      throw new BadRequestException(
-        'cannot reject a post that has been published',
-      );
-    await this.db.post.update({
-      where: { id ,isActive:true},
-      data: { status: PostStatus.PUBLISHED },
-    });
-    return { message: 'published' };
+    try {
+      const Post = await this.db.post.findUnique({
+        where: { id, isActive: true },
+      });
+      if (Post?.status == PostStatus.REJECTED)
+        throw new ForbiddenException(
+          'cannot publish a post that has been rejected',
+        );
+      if (Post?.status == PostStatus.PUBLISHED)
+        throw new BadRequestException(
+          'cannot reject a post that has been published',
+        );
+      await this.db.post.update({
+        where: { id, isActive: true },
+        data: { status: PostStatus.PUBLISHED },
+      });
+      return { message: 'published' };
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
+      console.log(error);
+      throw new InternalServerErrorException('internal server error');
+    }
   }
 
   async UpdateReject(id: number) {
-    const Post = await this.db.post.findUnique({ where: { id , isActive:true} });
-    if (Post?.status == PostStatus.PUBLISHED)
-      throw new ForbiddenException(
-        'cannot reject a post that has been published',
-      );
-    if (Post?.status == PostStatus.REJECTED)
-      throw new BadRequestException('post already reject');
-    await this.db.post.update({
-      where: { id },
-      data: { status: PostStatus.REJECTED },
-    });
-    return { message: 'rejected' };
+    try {
+      const Post = await this.db.post.findUnique({
+        where: { id, isActive: true },
+      });
+      if (Post?.status == PostStatus.PUBLISHED)
+        throw new ForbiddenException(
+          'cannot reject a post that has been published',
+        );
+      if (Post?.status == PostStatus.REJECTED)
+        throw new BadRequestException('post already reject');
+      await this.db.post.update({
+        where: { id , isActive:true},
+        data: { status: PostStatus.REJECTED },
+      });
+      return { message: 'rejected' };
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
+      console.log(error);
+      throw new InternalServerErrorException('internal server error');
+    }
   }
 
   async remove(id: number, userId: number) {
-    const userExist = await this.db.users.findUnique({
-      where: { id: userId, isActive: true },
-    });
-    if (!userExist) throw new NotFoundException('user not found');
-    console.log(userExist);
-    const post = await this.db.post.findUnique({
-      where: { id, isActive: true },
-    });
-    if (!post) throw new NotFoundException('aucun post pour cet user');
-    console.log(post);
-    if (userId != post.userId)
-      throw new UnauthorizedException('action non autorisée');
+    try {
+      const userExist = await this.db.users.findUnique({
+        where: { id: userId, isActive: true },
+      });
+      if (!userExist) throw new NotFoundException('user not found');
+      console.log(userExist);
+      const post = await this.db.post.findUnique({
+        where: { id, isActive: true },
+      });
+      if (!post) throw new NotFoundException('aucun post pour cet user');
+      console.log(post);
+      if (userId != post.userId)
+        throw new UnauthorizedException('action non autorisée');
 
-    await this.db.post.update({
-      where: { id: post.id },
-      data: { isActive: false },
-    });
-
-    return {
-      mesage: 'deleted',
-    };
+      await this.db.post.update({
+        where: { id: post.id },
+        data: { isActive: false },
+      });
+      return {
+        mesage: 'deleted',
+      };
+    } catch (error: any) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException
+      )
+        throw error;
+      console.log(error);
+      throw new InternalServerErrorException('internal server error');
+    }
   }
 }

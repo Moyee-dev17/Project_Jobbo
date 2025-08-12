@@ -7,6 +7,8 @@ import {
   Param,
   Request,
   UseGuards,
+  Query,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from '../service/users.register.service';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -21,7 +23,7 @@ export class UsersController {
     private readonly otpService: otpService,
   ) {}
 
-  @Post('signUp')
+  @Post('rsignup')
   async create(@Body() createUserDto: CreateUserDto) {
     const token = await this.otpService.generateOtp(createUserDto.phone);
     const userCreate = await this.usersService.create(createUserDto);
@@ -33,8 +35,8 @@ export class UsersController {
 
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
+    return this.usersService.findAll(+Page, +limit);
   }
 
   @UseGuards(JwtGuards)
@@ -43,14 +45,18 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-@UseGuards(JwtGuards)
-  @Patch('update/:id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto,@Request() req:any) {
-    const userId=req.user.id
-    return this.usersService.update(+id, updateUserDto,userId);
+  @UseGuards(JwtGuards)
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Request() req: any,
+  ) {
+    const userId = req.user.id;
+    return this.usersService.update( updateUserDto, userId);
   }
   @UseGuards(JwtGuards)
-  @Patch('delete/:id')
+  @Delete(':id')
   remove(@Param('id') id: string, @Request() req: any) {
     const userId = req.user.id;
     return this.usersService.remove(+id, userId);

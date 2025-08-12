@@ -18,7 +18,7 @@ export class MunicipalityService {
   ) {
     try {
       const cityExist = await this.db.city.findUnique({
-        where: { id: Number(cityId) },
+        where: { id: Number(cityId) , isActive:true},
       });
       if (!cityExist) throw new NotFoundException('city not found');
 
@@ -34,7 +34,7 @@ export class MunicipalityService {
         },
       });
       return createMunicipality;
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       if (
         error instanceof NotFoundException ||
@@ -46,34 +46,84 @@ export class MunicipalityService {
     }
   }
 
-  async findAll() {
-    const allMun = await this.db.municipality.findMany({
-      include: { suburbs: true },
-    });
-    return allMun;
+  async findAll(Page: number = 1, limit: number = 10) {
+    try {
+      const skip = (Page - 1) * limit;
+      const NombrePost = await this.db.city.count();
+      const NombrePage = NombrePost / limit;
+
+      const allMun = await this.db.municipality.findMany({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip,
+        include: { suburbs: true },
+      });
+      return {
+        message: 'liste des municipalités',
+        data: allMun,
+        currentPage: Page,
+        NombrePage,
+        NombrePost,
+      };
+    } catch (error: any) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'internal serveur error exception ',
+        error,
+      );
+    }
   }
 
   async findOne(id: number) {
-    const OneMun = await this.db.municipality.findUnique({
-      where: { id, isActive: true },
-      include: { suburbs: true },
-    });
-    return OneMun;
+    try {
+      const OneMun = await this.db.municipality.findUnique({
+        where: { id, isActive: true },
+        include: { suburbs: true },
+      });
+      return OneMun;
+    } catch (error: any) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'internal serveur error exception ',
+        error,
+      );
+    }
   }
 
   async update(id: number, updateMunicipalityDto: UpdateMunicipalityDto) {
-    const UpdateMun = await this.db.municipality.update({
-      where: { id, isActive: true },
-      data: updateMunicipalityDto,
-    });
-    return UpdateMun;
+    try {
+      await this.db.municipality.update({
+        where: { id, isActive: true },
+        data: updateMunicipalityDto,
+      });
+      return {
+        message:'updated'
+      }
+    } catch (error: any) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'internal serveur error exception ',
+        error,
+      );
+    }
   }
 
   async remove(id: number) {
-    const removeMun = await this.db.municipality.update({
-      where: { id },
-      data: { isActive: false },
-    });
-    return removeMun;
+    try {
+       await this.db.municipality.update({
+        where: { id , isActive:true},
+        data: { isActive: false },
+      });
+      return{
+        message:'deleted'
+      }
+    } catch (error: any) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'internal serveur error exception ',
+        error,
+      );
+    }
   }
 }

@@ -5,24 +5,31 @@ import {
   UseGuards,
   HttpCode,
   Patch,
-  BadRequestException,
-  Param,
   Req,
 } from '@nestjs/common';
-import { CreateUserDto } from 'src/Users/userRegister/dto/create-user.dto';
 import { loginUser } from '../service/users.login.service';
 import { JwtGuards } from 'src/Authentification/jwt.guard';
 import { LoginDto } from '../Dto/login.dto';
 import { updatePwdDto } from '../Dto/updatePassword.dto';
 import { resetPwdDto } from '../Dto/resetPassword.dto';
-@Controller('users')
+import { loginAdmin } from '../service/admin.login.service';
+@Controller('Auth')
 export class UsersLoginController {
-  constructor(private readonly usersLoginService: loginUser) {}
+  constructor(
+    private readonly usersLoginService: loginUser,
+    private readonly AdminLogin: loginAdmin,
+  ) {}
 
   @Post('signIn')
   @HttpCode(200)
   create(@Body() login: LoginDto) {
     return this.usersLoginService.login(login);
+  }
+
+  @Post('signin')
+  @HttpCode(200)
+  createAdmin(@Body() login: LoginDto) {
+    return this.AdminLogin.loginAdmin(login);
   }
 
   @UseGuards(JwtGuards)

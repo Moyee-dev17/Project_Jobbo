@@ -14,7 +14,7 @@ export class CityService {
   async createCity(createCityDto: CreateCityDto) {
     try {
       const cityExist = await this.db.city.findFirst({
-        where: { name: createCityDto.name },
+        where: { name: createCityDto.name , isActive:true},
       });
       if (cityExist) throw new BadRequestException('city already exist');
 
@@ -24,44 +24,91 @@ export class CityService {
         },
       });
       return { message: 'created' };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof BadRequestException) throw error;
       console.log(error);
       throw new InternalServerErrorException('internal server error', error);
     }
   }
 
-  async findAll() {
-    const AllCity = await this.db.city.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-    });
-    return AllCity;
+  async findAll(Page: number = 1, limit: number) {
+    try {
+      const skip = (Page - 1) * limit;
+      const NombrePost = await this.db.city.count();
+      const NombrePage = NombrePost / limit;
+
+      const AllCity = await this.db.city.findMany({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip,
+
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+      return {
+        message: 'liste des cities',
+        data: AllCity,
+        currentPage: Page,
+        NombrePage,
+        NombrePost,
+      };
+    } catch (error: any) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'internal serveur error exception ',
+        error,
+      );
+    }
   }
 
   async findOne(id: number) {
-    const OneCity = await this.db.city.findFirst({
-      where: { id, isActive: true },
-      include: { municipalities: true },
-    });
-    return OneCity;
+    try {
+      const OneCity = await this.db.city.findFirst({
+        where: { id, isActive: true },
+        include: { municipalities: true },
+      });
+      return OneCity;
+    } catch (error: any) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'internal serveur error exception ',
+        error,
+      );
+    }
   }
 
   async update(id: number, updateCityDto: UpdateCityDto) {
-    await this.db.city.update({
-      where: { id },
-      data: updateCityDto,
-    });
-    return { message: 'updated' };
+    try {
+      await this.db.city.update({
+        where: { id ,isActive:true},
+        data: updateCityDto,
+      });
+      return { message: 'updated' };
+    } catch (error: any) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'internal serveur error exception ',
+        error,
+      );
+    }
   }
 
   async remove(id: number) {
-    await this.db.city.update({
-      where: { id },
-      data: { isActive: false },
-    });
-    return { message: 'deleted' };
+    try {
+      await this.db.city.update({
+        where: { id , isActive:true},
+        data: { isActive: false },
+      });
+      return { message: 'deleted' };
+    } catch (error: any) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'internal serveur error exception ',
+        error,
+      );
+    }
   }
 }
