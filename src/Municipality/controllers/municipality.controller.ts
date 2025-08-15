@@ -9,37 +9,36 @@ import {
   Query,
   Delete,
 } from '@nestjs/common';
-import { MunicipalityService } from '../service/municipality.service';
+import { municipalityService } from '../municipality.service';
 import { CreateMunicipalityDto } from '../dto/create-municipality.dto';
 import { UpdateMunicipalityDto } from '../dto/update-municipality.dto';
-import { JwtGuards } from 'src/Authentification/jwt.guard';
-import { AdminOnlyGuard } from 'src/Authentification/AdminOnly.guard';
+import { JwtGuards } from 'src/authorization-manager/guards/jwt.guard';
+import { AdminOnlyGuard } from 'src/authorization-manager/guards/AdminOnly.guard';
 
 @Controller('municipality')
 export class MunicipalityController {
-  constructor(private readonly municipalityService: MunicipalityService) {}
+  constructor(private readonly municipalityService: municipalityService) {}
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Post(':id')
   create(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() createMunicipalityDto: CreateMunicipalityDto,
   ) {
-    return this.municipalityService.createMun(createMunicipalityDto, +id);
+    return this.municipalityService.createMunnicipality(createMunicipalityDto, +id);
   }
 
   @Get()
-  findAll(@Query('Page') Page: string, @Query('limit') limit: number) {
-    return this.municipalityService.findAll(+Page, +limit);
+  findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.municipalityService.findAll(+page, +limit);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.municipalityService.findOne(+id);
   }
-
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateMunicipalityDto: UpdateMunicipalityDto,
   ) {
     console.log(updateMunicipalityDto);
@@ -47,7 +46,7 @@ export class MunicipalityController {
   }
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.municipalityService.remove(+id);
   }
 }

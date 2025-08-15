@@ -6,10 +6,10 @@ import { SeederService } from './Seeder/seed';
 import { CategoriesModule } from './Categories/modules/categories.module';
 import { UsersController } from './Users/userRegister/controllers/users.controller';
 import { UsersModule } from './Users/UserLogin/module/users.module';
-import { UsersService } from './Users/userRegister/service/users.register.service';
+import { UsersService } from './Users/service/users.register.service';
 import { UsersLoginController } from './Users/UserLogin/controllers/users.controller';
 import { loginUser } from './Users/UserLogin/service/users.login.service';
-import { AuthService } from './Authentification/auth.service';
+import { AuthService } from './Authentification/JwtService';
 import { ConfigModule } from '@nestjs/config';
 import { authModule } from './Authentification/auth.module';
 import { CityController } from './City/controllers/city.controller';
@@ -23,8 +23,8 @@ import { PostService } from './Post/service/post.service';
 
 import { loginAdmin } from './Users/UserLogin/service/admin.login.service';
 import { AdminController } from './Users/userRegister/controllers/admin.controllers';
-import { OtpController } from './Authentification/otpAuth.controller';
-import { OtpModule } from './Authentification/otp.module';
+import { OtpController } from './authorization-manager/Otp.controller';
+import { OtpModule } from './authorization-manager/Otp.module';
 
 @Module({
   imports: [

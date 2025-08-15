@@ -12,8 +12,8 @@ import {
 import { SuburbService } from '../service/suburb.service';
 import { CreateSuburbDto } from '../dto/create-suburb.dto';
 import { UpdateSuburbDto } from '../dto/update-suburb.dto';
-import { JwtGuards } from 'src/Authentification/jwt.guard';
-import { AdminOnlyGuard } from 'src/Authentification/AdminOnly.guard';
+import { JwtGuards } from 'src/authorization-manager/guards/jwt.guard';
+import { AdminOnlyGuard } from 'src/authorization-manager/guards/AdminOnly.guard';
 
 @Controller('suburb')
 export class SuburbController {

@@ -11,11 +11,12 @@ import {
   Delete,
   Put,
 } from '@nestjs/common';
-import { PostService } from '../service/post.service';
+import { PostService } from '../post.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
-import { JwtGuards } from 'src/Authentification/jwt.guard';
-import { RootOnlyGuard } from 'src/Authentification/RootOnly.guard';
+import { JwtGuards } from 'src/authorization-manager/guards/jwt.guard';
+import { RootOnlyGuard } from 'src/authorization-manager/guards/RootOnly.guard';
+import { AdminOnlyGuard } from 'src/authorization-manager/guards/AdminOnly.guard';
 
 @Controller('post')
 export class PostController {
@@ -24,8 +25,8 @@ export class PostController {
   @UseGuards(JwtGuards)
   @Post()
   create(@Body() createPostDto: CreatePostDto, @Request() req: any) {
-    const userId = req.user.id;
-    return this.postService.createPost(createPostDto, userId);
+    const userId :number= req.user.id;
+    return this.postService.createPost(createPostDto, +userId);
   }
 
   @UseGuards(JwtGuards)
@@ -34,58 +35,55 @@ export class PostController {
     @Query('Page') Page: string,
     @Query('limit') limit: string,
     @Query('libelle') libelle: string,
-    @Query('categorieId') categorieName: string,//TODO: retirer ce filtre
     @Request() req: any,
   ) {
-    const userId: string = req.user.id;
+    const userId: number = req.user.id;
     return this.postService.findUserPost(
       +userId,
       +Page,
       +limit,
       libelle,
-      categorieName,
     );
   }
 
   @UseGuards(JwtGuards, RootOnlyGuard)
   @Get("root")
-  findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
-    return this.postService.findAllPagination(+Page, +limit);
+  findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.postService.findAllforRoot(+page, +limit);
   }
 
-  @UseGuards(JwtGuards)//TODO: pas besoin d'etre authentifié
+  @UseGuards(JwtGuards)
   @Get()
-  PostGlobal(@Query('Page') Page: string, @Query('limit') limit: string) {
-    return this.postService.userGlobal(+Page, +limit);
+  PostGlobal(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.postService.userGlobal(+page, +limit);
   }
 
   @UseGuards(JwtGuards)
   @Put(':id')
   update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updatePostDto: UpdatePostDto,
-    @Request() req: any,
+    @Request() req: any
   ) {
-    const userId: string = req.user.id;
+    const userId: number = req.user.id;
     return this.postService.update(+id, updatePostDto, +userId);
   }
 
-  @UseGuards(JwtGuards, RootOnlyGuard)//TODO: accordé aux admin aussi
-  @Patch('publish/:id')
-  updatePublished(@Param('id') id: string) {
+  @UseGuards(JwtGuards,AdminOnlyGuard, RootOnlyGuard)
+  updatePublished(@Param('id') id: number) {
     return this.postService.UpdatePublished(+id);
   }
 
   @UseGuards(JwtGuards, RootOnlyGuard)
   @Patch('reject/:id')
-  updateReject(@Param('id') id: string) {
+  updateReject(@Param('id') id: number) {
     return this.postService.UpdateReject(+id);
   }
 
   @UseGuards(JwtGuards)
   @Delete(':id')
-  remove(@Param('id') id: string, @Request() req: any) {
-    const userId: string = req.user.id;
+  remove(@Param('id') id: number, @Request() req: any) {
+    const userId: number = req.user.id;
     return this.postService.remove(+id, +userId);
   }
 }

@@ -1,10 +1,6 @@
 import { PrismaService } from 'src/Prisma-config/prisma.service';
 import { Injectable } from '@nestjs/common';
-export enum Role {
-  user = 1,
-  admin = 2,
-  root = 3,
-}
+
 @Injectable()
 export class seedRole {
   constructor(private readonly db: PrismaService) {}

@@ -9,15 +9,15 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { CityService } from '../service/city.service';
+import { cityService } from '../city.service';
 import { CreateCityDto } from '../dto/create-city.dto';
 import { UpdateCityDto } from '../dto/update-city.dto';
-import { JwtGuards } from 'src/Authentification/jwt.guard';
-import { AdminOnlyGuard } from 'src/Authentification/AdminOnly.guard';
+import { JwtGuards } from 'src/authorization-manager/guards/jwt.guard';
+import { AdminOnlyGuard } from 'src/authorization-manager/guards/AdminOnly.guard';
 
 @Controller('city')
 export class CityController {
-  constructor(private readonly cityService: CityService) {}
+  constructor(private readonly cityService: cityService) {}
 
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Post()
@@ -26,24 +26,24 @@ export class CityController {
   }
 
   @Get()
-  findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
-    return this.cityService.findAll(+Page, +limit);
+  findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.cityService.findAll(+page, +limit);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.cityService.findOne(+id);
   }
 
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCityDto: UpdateCityDto) {
+  update(@Param('id') id: number, @Body() updateCityDto: UpdateCityDto) {
     return this.cityService.update(+id, updateCityDto);
   }
 
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.cityService.remove(+id);
   }
 }
