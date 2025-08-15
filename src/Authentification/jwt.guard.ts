@@ -16,7 +16,7 @@ export class JwtGuards implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
+    const req: any = context.switchToHttp().getRequest();
 
     const token = req.headers.authorization.split(' ')[1];
     console.log(token);
@@ -24,7 +24,7 @@ export class JwtGuards implements CanActivate {
 
     try {
       const decoded = this.jwt.verify(token, {
-        secret: process.env.SECRET_KEY,
+        secret: process.env.SECRET_KEY as string,
       });
 
       const user = await this.db.users.findUnique({
@@ -37,7 +37,7 @@ export class JwtGuards implements CanActivate {
       req.user = user;
       console.log(user);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       throw new ForbiddenException('Accès refusé : token invalide ou expiré');
     }

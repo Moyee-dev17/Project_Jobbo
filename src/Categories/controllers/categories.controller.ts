@@ -28,7 +28,7 @@ export class CategoriesController {
   findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
     return this.categoriesService.findAll(+Page, +limit);
   }
-
+  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(+id);

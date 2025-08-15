@@ -39,8 +39,6 @@ export class UsersLoginController {
     return this.usersLoginService.updatePwd(+userId, body);
   }
 
-
-
   @UseGuards(JwtGuards)
   @Post('forgot-password')
   async requestPasswordReset(@Body('phone') phone: string) {
@@ -49,7 +47,7 @@ export class UsersLoginController {
 
   @UseGuards(JwtGuards)
   @Patch('reset-password')
-  async resetPasswordWithOtp(@Body() body: resetPwdDto, @Req() req: any) {
+  async resetPasswordWithOtp(@Body() body: resetPwdDto) {
     return await this.usersLoginService.resetPassword(body);
   }
 }

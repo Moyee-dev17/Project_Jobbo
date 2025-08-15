@@ -1,6 +1,7 @@
 import { AuthService } from './auth.service';
 import { Controller, Post, Body } from '@nestjs/common';
 
+//TODO : à supprimer
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authservice: AuthService) {}

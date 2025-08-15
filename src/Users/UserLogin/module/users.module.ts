@@ -3,7 +3,6 @@ import { UsersService } from 'src/Users/userRegister/service/users.register.serv
 import { UsersController } from 'src/Users/userRegister/controllers/users.controller';
 import { PrismaModule } from 'src/Prisma-config/prisma.module';
 import { JwtService } from '@nestjs/jwt';
-import { otpService } from 'src/Authentification/otpAuth.service';
 import { OtpModule } from 'src/Authentification/otp.module';
 @Module({
   imports: [PrismaModule, OtpModule],

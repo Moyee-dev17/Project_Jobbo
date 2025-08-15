@@ -23,50 +23,40 @@ export class PostController {
 
   @UseGuards(JwtGuards)
   @Post()
-  create(
-    @Body() createPostDto: CreatePostDto,
-    @Request() req: any,
-    categorieId: number,
-  ) {
+  create(@Body() createPostDto: CreatePostDto, @Request() req: any) {
     const userId = req.user.id;
-    return this.postService.createPost(
-      createPostDto,
-      userId,
-      Number(categorieId),
-    );
+    return this.postService.createPost(createPostDto, userId);
   }
-// TODO:filtrage par categorie
+
   @UseGuards(JwtGuards)
   @Get('getUserPost')
   findUserPost(
     @Query('Page') Page: string,
     @Query('limit') limit: string,
     @Query('libelle') libelle: string,
+    @Query('categorieId') categorieName: string,//TODO: retirer ce filtre
     @Request() req: any,
   ) {
-    const userId = req.user.id;
-    return this.postService.findUserPost(userId, +Page, +limit, libelle);
+    const userId: string = req.user.id;
+    return this.postService.findUserPost(
+      +userId,
+      +Page,
+      +limit,
+      libelle,
+      categorieName,
+    );
   }
 
-
-  // TO DO : findAll pour user global(post publish)
-
-
   @UseGuards(JwtGuards, RootOnlyGuard)
-  @Get()
+  @Get("root")
   findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
     return this.postService.findAllPagination(+Page, +limit);
   }
 
-// ??????
-  @UseGuards(JwtGuards)
-  @Get('getPost')
-  getPost(
-    @Body() body: { categorie: string },
-    @Query('status') status: string,
-    @Request() req: any,
-  ) {
-    return this.postService.getPostByStatusAndCategorie(status, body.categorie);
+  @UseGuards(JwtGuards)//TODO: pas besoin d'etre authentifié
+  @Get()
+  PostGlobal(@Query('Page') Page: string, @Query('limit') limit: string) {
+    return this.postService.userGlobal(+Page, +limit);
   }
 
   @UseGuards(JwtGuards)
@@ -76,11 +66,11 @@ export class PostController {
     @Body() updatePostDto: UpdatePostDto,
     @Request() req: any,
   ) {
-    const userId = req.user.id;
-    return this.postService.update(+id, updatePostDto, userId);
+    const userId: string = req.user.id;
+    return this.postService.update(+id, updatePostDto, +userId);
   }
 
-  @UseGuards(JwtGuards, RootOnlyGuard)
+  @UseGuards(JwtGuards, RootOnlyGuard)//TODO: accordé aux admin aussi
   @Patch('publish/:id')
   updatePublished(@Param('id') id: string) {
     return this.postService.UpdatePublished(+id);
@@ -95,7 +85,7 @@ export class PostController {
   @UseGuards(JwtGuards)
   @Delete(':id')
   remove(@Param('id') id: string, @Request() req: any) {
-    const userId = req.user.id;
-    return this.postService.remove(+id, userId);
+    const userId: string = req.user.id;
+    return this.postService.remove(+id, +userId);
   }
 }

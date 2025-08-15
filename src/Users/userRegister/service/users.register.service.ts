@@ -50,7 +50,7 @@ export class UsersService {
       return {
         message: 'created',
       };
-    } catch (error:any) {
+    } catch (error: any) {
       console.log(error);
       if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException('internal server error');
@@ -83,7 +83,7 @@ export class UsersService {
       };
     } catch (error: any) {
       if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException('internal server error', error);
+      throw new BadRequestException('internal server error');
     }
   }
 
@@ -117,7 +117,8 @@ export class UsersService {
         totalPage: NbrTotalPage,
       };
     } catch (error: any) {
-      throw new BadRequestException('internal server error', error);
+      console.log(error);
+      throw new BadRequestException('internal server error');
     }
   }
 
@@ -209,7 +210,7 @@ export class UsersService {
         where: { roleId: Role.admin, isActive: true },
       });
       return admins;
-    } catch (error:any) {
+    } catch (error: any) {
       console.log(error);
       throw new InternalServerErrorException('internal server error');
     }
@@ -275,11 +276,11 @@ export class UsersService {
       });
       if (!userexist) throw new NotFoundException('user not found');
       await this.db.users.update({
-        where: { id :userexist.id },
+        where: { id: userexist.id },
         data: { isActive: false },
       });
       return { message: 'compte supprimé avec succes' };
-    } catch (error:any) {
+    } catch (error: any) {
       if (error instanceof NotFoundException) throw error;
       console.log(error);
       throw new InternalServerErrorException('internal server error');

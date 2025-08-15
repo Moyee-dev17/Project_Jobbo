@@ -11,7 +11,7 @@ export class SeederService implements OnModuleDestroy, OnModuleInit {
     try {
       await new seedRole(this.db).SeedRole();
       await new seeRoot(this.db).seed();
-    } catch (error) {
+    } catch (error: any) {
       return error;
     }
   }

@@ -23,13 +23,13 @@ export class seeRoot {
 
     if (userExist) throw new BadRequestException('User already exists');
 
-    const passwdHash = await bcrypt.hash(password, 10);
+    const passwdHash: any = await bcrypt.hash(password, 10);
 
     await this.db.users.create({
       data: {
-        email,
-        fullName,
-        phone,
+        email: email,
+        fullName: fullName,
+        phone: phone,
         password: passwdHash,
         isActive: true,
         roleId: Role.root,

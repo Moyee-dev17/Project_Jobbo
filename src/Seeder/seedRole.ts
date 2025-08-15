@@ -17,7 +17,7 @@ export class seedRole {
       if (roleExist) continue;
       const createRole = await this.db.role.createMany({
         data: { name: tabRole[i] },
-      }); //TODO: eviter des variable qui ne sont pas utilisées
+      });
       console.log('seeder effectué');
       console.log(createRole);
     }

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateCityDto } from '../dto/create-city.dto';
 import { UpdateCityDto } from '../dto/update-city.dto';
@@ -21,93 +22,113 @@ export class CityService {
       await this.db.city.create({
         data: {
           name: createCityDto.name,
-        },
+        }
       });
       return { message: 'created' };
     } catch (error: any) {
       if (error instanceof BadRequestException) throw error;
       console.log(error);
-      throw new InternalServerErrorException('internal server error', error);
+      throw new InternalServerErrorException('internal server error');
     }
   }
 
-  async findAll(Page: number = 1, limit: number) {
+  async findAll(Page: number, limit: number) {
     try {
+      //TODO : refactoriser la pagination par defaut
       const skip = (Page - 1) * limit;
-      const NombrePost = await this.db.city.count();
-      const NombrePage = NombrePost / limit;
+      const NombreCity = await this.db.city.count();
+      const NombrePage = NombreCity / limit;
 
       const AllCity = await this.db.city.findMany({
         where: { isActive: true },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip,
-
         select: {
           id: true,
           name: true,
         },
       });
+      if (!AllCity) throw new NotFoundException('city not found');
       return {
         message: 'liste des cities',
         data: AllCity,
         currentPage: Page,
-        NombrePage,
-        NombrePost,
+        TotalPage: NombrePage,
+        TotalCity: NombreCity,
       };
     } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }
 
   async findOne(id: number) {
     try {
-      const OneCity = await this.db.city.findFirst({
+      const City = await this.db.city.findFirst({
         where: { id, isActive: true },
-        include: { municipalities: true },
+        include: { municipalities: {
+          include:{suburbs:true}
+        }},
       });
-      return OneCity;
+      if (!City) throw new NotFoundException('city not found');
+      return City;
     } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
-        'internal serveur error exception ',
-        error,
+        'internal serveur error exception',
       );
     }
   }
 
   async update(id: number, updateCityDto: UpdateCityDto) {
     try {
-      await this.db.city.update({
+      const city = await this.db.city.findUnique({
         where: { id, isActive: true },
+      });
+      if (!city) throw new NotFoundException('city not found');
+
+      const cityExist = await this.db.category.findFirst({
+        where: { title: updateCityDto.name , isActive : true},
+      });
+      if (cityExist) throw new BadRequestException('city already ready');
+      await this.db.city.update({
+        where: { id : city.id},
         data: updateCityDto,
       });
       return { message: 'updated' };
     } catch (error: any) {
       console.log(error);
-      throw new InternalServerErrorException(
-        'internal serveur error exception ',
-        error,
-      );
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      )
+        throw new InternalServerErrorException(
+          'internal serveur error exception ',
+        );
     }
   }
 
   async remove(id: number) {
     try {
-      await this.db.city.update({
+      const city = await this.db.city.findUnique({
         where: { id, isActive: true },
+      });
+      if (!city) throw new NotFoundException('city not found');
+      await this.db.city.update({
+        where: { id : city.id},
         data: { isActive: false },
       });
       return { message: 'deleted' };
     } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }

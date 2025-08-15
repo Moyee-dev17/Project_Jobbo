@@ -47,19 +47,15 @@ export class UsersController {
 
   @UseGuards(JwtGuards)
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @Request() req: any,
-  ) {
-    const userId = req.user.id;
-    return this.usersService.update(updateUserDto, userId);
+  update(@Body() updateUserDto: UpdateUserDto, @Request() req: any) {
+    const userId: string = req.user.id;
+    return this.usersService.update(updateUserDto, +userId);
   }
-// TODO: revoir suppression de compte
+
   @UseGuards(JwtGuards)
-  @Delete(':id')
-  remove(@Param('id') id: string, @Request() req: any) {
-    const userId = req.user.id;
-    return this.usersService.remove(userId);
+  @Delete('delete')
+  remove(@Request() req: any) {
+    const userId: string = req.user.id;
+    return this.usersService.remove(+userId);
   }
 }

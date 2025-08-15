@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+
+//TODO: renommé en JwtService
 @Injectable()
 export class AuthService {
   constructor(private readonly jwtservice: JwtService) {}

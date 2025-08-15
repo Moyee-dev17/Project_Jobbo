@@ -6,13 +6,14 @@ import {
 } from '@nestjs/common';
 import { Role } from 'src/Seeder/seedRole';
 
+//TODO : mettre dans un dossier authorization-manager
 @Injectable()
 export class AdminOnlyGuard implements CanActivate {
+  
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
+    const req: any = context.switchToHttp().getRequest();
 
-    const user = req.user;
-    console.log(user);
+    const user: any = req.user;
     if (!user || (user.roleId !== Role.admin && user.roleId !== Role.root))
       throw new ForbiddenException('Action non autorisée');
     return true;

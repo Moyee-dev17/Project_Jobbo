@@ -33,32 +33,36 @@ export class CategoriesService {
     }
   }
 
-  async findAll(Page: number = 1, limit: number = 10) {
+  //TODO : bien renommée les variables
+  async findAll(Page: number, limit: number) {
     try {
-      const skip = (Page - 1) * limit;
-      const NombreCategorie = await this.db.category.count({where:{isActive:true}});
-      const NombrePage = NombreCategorie / limit;
-
-      const Categories = this.db.category.findMany({
+      const pageNumber = Number(Page) || 1
+      const limitNumber = Number(limit) || 10
+      const skip = (pageNumber - 1 ) * limitNumber
+      const NombreCategorie = await this.db.category.count({
         where: { isActive: true },
-        take: limit,
+      });
+      const NombrePage = NombreCategorie / limit;
+      const totalPages = Math.ceil(NombrePage)
+
+      const Categories = await this.db.category.findMany({
+        where: { isActive: true },
+        take: limitNumber,
         skip,
-        orderBy: {createdAt:'desc'},
+        orderBy: { createdAt: 'desc' },
         include: { post: true },
       });
-      if(!Categories)throw new NotFoundException('categorie not found')
       return {
         message: 'liste des categories',
         data: Categories,
         curentPage: Page,
-        totalPage:NombrePage,
-        totalCategorie:NombreCategorie,
+        totalPages,
+        totalCategorie: NombreCategorie,
       };
     } catch (error: any) {
       console.log(error);
-      if(error instanceof NotFoundException)throw error
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('interal serer error');
-
     }
   }
 
@@ -68,45 +72,53 @@ export class CategoriesService {
         where: { id, isActive: true },
         include: { post: true },
       });
-      if(!Categorie)throw new NotFoundException('categorie not found')
+      if (!Categorie) throw new NotFoundException('categorie not found');
       return Categorie;
-
     } catch (error: any) {
       console.log(error);
-      if(error instanceof NotFoundException)throw error
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('interal serer error');
-
     }
   }
 
   async updateCategory(id: number, updateCategoryDto: UpdateCategoryDto) {
     try {
-      const category=await this.db.category.findUnique({where:{id , isActive:true}})
-
-      if(!category)throw new NotFoundException("categorie not found")
-
-      const cat=await this.db.category.findFirst({where:{title:updateCategoryDto.title}})
-      if(cat)throw new BadRequestException('categorie already ready')
-      await this.db.category.update({
+      const category = await this.db.category.findUnique({
         where: { id, isActive: true },
+      });
+
+      if (!category) throw new NotFoundException('categorie not found');
+
+      const cat = await this.db.category.findFirst({
+        where: { title: updateCategoryDto.title, isActive: true },
+      });
+      if (cat) throw new BadRequestException('categorie already ready');
+      await this.db.category.update({
+        where: { id : category.id},
         data: updateCategoryDto,
       });
-    
 
       return { message: 'updated' };
     } catch (error: any) {
       console.log(error);
-      if(error instanceof NotFoundException||
+      if (
+        error instanceof NotFoundException ||
         error instanceof BadRequestException
-      )throw error
+      )
+        throw error;
       throw new InternalServerErrorException('interal serer error');
     }
   }
 
   async remove(id: number) {
     try {
-      await this.db.category.update({
+      const category = await this.db.category.findUnique({
         where: { id, isActive: true },
+      });
+
+      if (!category) throw new NotFoundException('categorie not found');
+      await this.db.category.update({
+        where: { id : category.id},
         data: { isActive: false },
       });
       return { message: 'deleted' };

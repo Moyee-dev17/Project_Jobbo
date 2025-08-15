@@ -38,7 +38,6 @@ export class SuburbService {
         throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }
@@ -46,8 +45,8 @@ export class SuburbService {
   async findAll(Page: number = 1, limit: number = 10) {
     try {
       const skip = (Page - 1) * limit;
-      const NbrTotalPost = await this.db.post.count();
-      const NbrTotalPage = NbrTotalPost / limit;
+      const TotalSuburb = await this.db.post.count();
+      const TotalPage = TotalSuburb / limit;
       const AllSuburb = await this.db.suburb.findMany({
         orderBy: { createdAt: 'asc' },
         take: limit,
@@ -57,64 +56,83 @@ export class SuburbService {
           name: true,
         },
       });
+      if (!AllSuburb) throw new NotFoundException('suburb not found');
       return {
         data: AllSuburb,
         currentPage: Page,
-        NbrTotalPost,
-        NbrTotalPage,
+        TotalPost: TotalSuburb,
+        TotalPage: TotalPage,
       };
     } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }
 
   async findOne(id: number) {
     try {
-      const OneSburb = await this.db.suburb.findUnique({
+      const suburb = await this.db.suburb.findUnique({
         where: { id, isActive: true },
       });
-      return OneSburb;
+      if (!suburb) throw new NotFoundException('suburb not found');
+      return suburb;
     } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
-        'internal serveur error exception ',
-        error,
+        'internal serveur error exception',
       );
     }
   }
 
   async update(id: number, updateSuburbDto: UpdateSuburbDto) {
     try {
-      await this.db.suburb.update({
+      const suburbExist = await this.db.suburb.findUnique({
         where: { id, isActive: true },
+      });
+      if (!suburbExist) throw new NotFoundException('suburb not found');
+      const suburb = await this.db.category.findFirst({
+        where: { title: updateSuburbDto.name , isActive : true },
+      });
+      if (suburb) throw new BadRequestException('suburb already exist');
+      await this.db.suburb.update({
+        where: { id : suburbExist.id},
         data: updateSuburbDto,
       });
       return { message: 'updated' };
     } catch (error) {
       console.log(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      )
+        throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }
 
   async remove(id: number) {
     try {
-      await this.db.suburb.update({
+      const suburbExist = await this.db.suburb.findFirst({
         where: { id, isActive: true },
+      });
+      if (!suburbExist) throw new NotFoundException('suburb not found');
+
+      await this.db.suburb.update({
+        where: { id : suburbExist.id},
         data: { isActive: false },
       });
       return { message: 'deleted' };
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }

@@ -23,17 +23,19 @@ export class MunicipalityService {
       if (!cityExist) throw new NotFoundException('city not found');
 
       const MunExist = await this.db.municipality.findFirst({
-        where: { name: createMunicipalityDto.name },
+        where: { name: createMunicipalityDto.name , isActive : true },
       });
       if (MunExist) throw new BadRequestException('municipality already exist');
 
-      const createMunicipality = await this.db.municipality.create({
+      await this.db.municipality.create({
         data: {
           name: createMunicipalityDto.name,
           city: { connect: { id: cityExist.id } },
         },
       });
-      return createMunicipality;
+      return {
+      message : "Created"
+      };
     } catch (error: any) {
       console.log(error);
       if (
@@ -49,8 +51,8 @@ export class MunicipalityService {
   async findAll(Page: number = 1, limit: number = 10) {
     try {
       const skip = (Page - 1) * limit;
-      const NombrePost = await this.db.city.count();
-      const NombrePage = NombrePost / limit;
+      const NombreMunicipality = await this.db.city.count();
+      const NombrePage = NombreMunicipality / limit;
 
       const allMun = await this.db.municipality.findMany({
         where: { isActive: true },
@@ -59,42 +61,52 @@ export class MunicipalityService {
         skip,
         include: { suburbs: true },
       });
+      if (!allMun) throw new NotFoundException('municipality not found');
       return {
         message: 'liste des municipalités',
         data: allMun,
         currentPage: Page,
-        NombrePage,
-        NombrePost,
+        TotalPage: NombrePage,
+        TotalPost: NombreMunicipality,
       };
     } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
-        'internal serveur error exception ',
-        error,
+        'internal serveur error exception',
       );
     }
   }
 
   async findOne(id: number) {
     try {
-      const OneMun = await this.db.municipality.findUnique({
+      const Municipality = await this.db.municipality.findUnique({
         where: { id, isActive: true },
         include: { suburbs: true },
       });
-      return OneMun;
+      if (!Municipality) throw new NotFoundException('municipality not found');
+      return Municipality;
     } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }
 
   async update(id: number, updateMunicipalityDto: UpdateMunicipalityDto) {
     try {
-      await this.db.municipality.update({
+      const Municipality = await this.db.municipality.findUnique({
         where: { id, isActive: true },
+      });
+      if (!Municipality) throw new NotFoundException('municipality not found');
+      const MunExist = await this.db.category.findFirst({
+        where: { title: updateMunicipalityDto.name , isActive : true },
+      });
+      if (MunExist) throw new BadRequestException('municipality already exist');
+      await this.db.municipality.update({
+        where: { id : Municipality.id},
         data: updateMunicipalityDto,
       });
       return {
@@ -102,17 +114,25 @@ export class MunicipalityService {
       };
     } catch (error: any) {
       console.log(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      )
+        throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }
 
   async remove(id: number) {
     try {
-      await this.db.municipality.update({
+      const Municipality = await this.db.municipality.findUnique({
         where: { id, isActive: true },
+      });
+      if (!Municipality) throw new NotFoundException('municipality not found');
+      await this.db.municipality.update({
+        where: { id: Municipality.id},
         data: { isActive: false },
       });
       return {
@@ -120,9 +140,9 @@ export class MunicipalityService {
       };
     } catch (error: any) {
       console.log(error);
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
         'internal serveur error exception ',
-        error,
       );
     }
   }

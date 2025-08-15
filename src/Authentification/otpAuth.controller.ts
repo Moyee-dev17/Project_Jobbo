@@ -2,6 +2,8 @@ import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 import { otpService } from './otpAuth.service';
 import { OtpVerifyService } from './otpVerify';
 
+
+//TODO : Renommé plus simplement la resource otp
 @Controller('otp')
 export class OtpController {
   constructor(

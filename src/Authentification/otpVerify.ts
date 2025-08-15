@@ -11,7 +11,7 @@ export class OtpVerifyService {
       const user = await this.db.users.findFirst({ where: { phone } });
       if (!user) throw new UnauthorizedException('Utilisateur introuvable');
 
-      const secret = `${process.env.SECRET}-${phone}`;
+      const secret: string = `${process.env.SECRET}-${phone}`;
       const isValid = totp.check(code, secret);
 
       if (!isValid) {
@@ -28,9 +28,8 @@ export class OtpVerifyService {
 
       return {
         message: 'OTP vérifié avec succès',
-        userCompteActivate: updatedUser.isActive,
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof UnauthorizedException) throw error;
     }
   }
