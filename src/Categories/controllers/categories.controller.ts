@@ -5,47 +5,47 @@ import {
   Body,
   Patch,
   Param,
-  Req,
   UseGuards,
+  Delete,
+  Query,
 } from '@nestjs/common';
-import { CategoriesService } from '../service/categories.service';
+import { CategoriesService } from '../categories.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
-import { JwtGuards } from 'src/Authentification/jwt.guard';
-import { AdminOnlyGuard } from 'src/Authentification/AdminOnly.guard';
+import { JwtGuards } from 'src/authorization-manager/guards/jwt.guard';
+import { AdminOnlyGuard } from 'src/authorization-manager/guards/AdminOnly.guard';
 
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto, @Req() req) {
-    const userId = req.user.id;
-    return this.categoriesService.createCategory(createCategoryDto, userId);
+  create(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoriesService.createCategory(createCategoryDto);
   }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.categoriesService.findAll(+page, +limit);
   }
-
+  
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+  findOne(@Param('categorieId') categorieId: number) {
+    return this.categoriesService.findOne(+categorieId);
   }
 
-  @UseGuards(JwtGuards,AdminOnlyGuard)
-  @Patch('update/:id')
+  @UseGuards(JwtGuards, AdminOnlyGuard)
+  @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('categorieId') categorieId: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    return this.categoriesService.updateCategory(+id, updateCategoryDto);
+    return this.categoriesService.updateCategory(+categorieId, updateCategoryDto);
   }
 
   @UseGuards(AdminOnlyGuard)
-  @Patch('delete/:id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
+  @Delete(':id')
+  remove(@Param('categorieId') categorieId: number) {
+    return this.categoriesService.remove(+categorieId);
   }
 }

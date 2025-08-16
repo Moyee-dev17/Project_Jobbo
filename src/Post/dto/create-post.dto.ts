@@ -3,9 +3,8 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  isNumber,
 } from '@nestjs/class-validator';
-import { isNotEmpty } from 'class-validator';
+
 export class CreatePostDto {
   @IsNotEmpty()
   @IsString()
@@ -32,5 +31,5 @@ export class CreatePostDto {
 
   @IsNumber()
   @IsNotEmpty()
-  categorieId: number;
+  categorieId: number;//TODO: la categorie (name)
 }

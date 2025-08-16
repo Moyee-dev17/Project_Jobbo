@@ -7,12 +7,13 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { SuburbService } from '../service/suburb.service';
 import { CreateSuburbDto } from '../dto/create-suburb.dto';
 import { UpdateSuburbDto } from '../dto/update-suburb.dto';
-import { JwtGuards } from 'src/Authentification/jwt.guard';
-import { AdminOnlyGuard } from 'src/Authentification/AdminOnly.guard';
+import { JwtGuards } from 'src/authorization-manager/guards/jwt.guard';
+import { AdminOnlyGuard } from 'src/authorization-manager/guards/AdminOnly.guard';
 
 @Controller('suburb')
 export class SuburbController {
@@ -25,8 +26,8 @@ export class SuburbController {
   }
 
   @Get()
-  findAll() {
-    return this.suburbService.findAll();
+  findAll(@Query('Page') Page: string, @Query('limit') limit: string) {
+    return this.suburbService.findAll(+Page, +limit);
   }
 
   @Get(':id')
@@ -34,12 +35,12 @@ export class SuburbController {
     return this.suburbService.findOne(+id);
   }
 
-  @Patch('update/:id')
+  @Patch(':id')
   update(@Param('id') id: string, @Body() updateSuburbDto: UpdateSuburbDto) {
     return this.suburbService.update(+id, updateSuburbDto);
   }
-@UseGuards(JwtGuards,AdminOnlyGuard)
-  @Patch('delete/:id')
+  @UseGuards(JwtGuards, AdminOnlyGuard)
+  @Delete(':id')
   remove(@Param('id') id: string) {
     return this.suburbService.remove(+id);
   }
