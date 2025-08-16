@@ -52,7 +52,7 @@ export class cityService {
           name: true,
         }
       });
-      if (!allCity) throw new NotFoundException('city not found');
+      
       return {
         message: 'liste des cities',
         data: allCity,

@@ -9,7 +9,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/Prisma-config/prisma.service';
 
 @Injectable()
-export class CategoriesService {
+export class categoriesService {
   constructor(private readonly db: PrismaService) {}
 
   async createCategory(createCategoryDto: CreateCategoryDto) {
@@ -47,7 +47,7 @@ export class CategoriesService {
 
       const categories = await this.db.category.findMany({
         where: { isActive: true },
-        take: limit,
+        take: limitNumber,
         skip,
         orderBy: { createdAt: 'desc' },
         include: { post: true },

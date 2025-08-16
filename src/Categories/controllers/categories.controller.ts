@@ -9,7 +9,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { CategoriesService } from '../categories.service';
+import { categoriesService } from '../categories.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { JwtGuards } from 'src/authorization-manager/guards/jwt.guard';
@@ -17,7 +17,7 @@ import { AdminOnlyGuard } from 'src/authorization-manager/guards/AdminOnly.guard
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(private readonly categoriesService: categoriesService) {}
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -30,22 +30,22 @@ export class CategoriesController {
   }
   
   @Get(':id')
-  findOne(@Param('categorieId') categorieId: number) {
-    return this.categoriesService.findOne(+categorieId);
+  findOne(@Param('id') id: number) {
+    return this.categoriesService.findOne(+id);
   }
 
   @UseGuards(JwtGuards, AdminOnlyGuard)
   @Patch(':id')
   update(
-    @Param('categorieId') categorieId: number,
+    @Param('id') id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    return this.categoriesService.updateCategory(+categorieId, updateCategoryDto);
+    return this.categoriesService.updateCategory(+id, updateCategoryDto);
   }
 
   @UseGuards(AdminOnlyGuard)
   @Delete(':id')
-  remove(@Param('categorieId') categorieId: number) {
-    return this.categoriesService.remove(+categorieId);
+  remove(@Param('id') id: number) {
+    return this.categoriesService.remove(+id);
   }
 }

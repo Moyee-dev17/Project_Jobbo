@@ -63,7 +63,7 @@ export class municipalityService {
         skip,
         include: { suburbs: true },
       });
-      if (!allMuninicipality) throw new NotFoundException('municipality not found');
+    
       return {
         message: 'liste des municipalités',
         data: allMuninicipality,

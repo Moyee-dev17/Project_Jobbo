@@ -130,7 +130,7 @@ export class PostService {
         take: limitNumber,
         skip,
       });
-      if (!posts) throw new NotFoundException('post not found');
+     
       return {
         message: 'la liste des postes',
         data: posts,
